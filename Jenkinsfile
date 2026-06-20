@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_DEFAULT_REGION = 'us-east-1'
-        S3_BUCKET           = 'my-jenkins-deploy-bucket'   // Change this to your bucket name
+        S3_BUCKET = 'my-jenkins-deploy-bucket'   // Change this to your bucket name
     }
 
     stages {
@@ -21,15 +20,13 @@ pipeline {
 
         stage('Deploy to S3') {
             steps {
-                withAWS(credentials: 'aws-credentials-id') {   // Change to your Jenkins AWS creds ID
-                    sh """
-                        aws s3 sync . s3://${S3_BUCKET}/ \
-                            --delete \
-                            --exclude ".git/*" \
-                            --exclude "Jenkinsfile" \
-                            --exclude "*.md"
-                    """
-                }
+                sh """
+                    aws s3 sync . s3://${S3_BUCKET}/ \
+                        --delete \
+                        --exclude ".git/*" \
+                        --exclude "Jenkinsfile" \
+                        --exclude "*.md"
+                """
             }
         }
 
