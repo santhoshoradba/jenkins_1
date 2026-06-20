@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        S3_BUCKET = 'my-jenkins-deploy-bucket'   // Change this to your bucket name
+        S3_BUCKET = 'sunsantho'
     }
 
     stages {
