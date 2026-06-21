@@ -1,0 +1,41 @@
+version: 0.2
+
+env:
+  variables:
+    S3_BUCKET: "sunsantho"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo "No dependencies to install — static site"
+
+  pre_build:
+    commands:
+      - echo "Starting deployment to s3://${S3_BUCKET}"
+
+  build:
+    commands:
+      - aws s3 sync . s3://${S3_BUCKET}/ --delete --exclude ".git/*" --exclude "Jenkinsfile" --exclude "buildspec.yml" --exclude "*.md"
+
+  post_build:
+    commands:
+      - echo "Deployment to S3 complete!"
+      - |
+        if [ -f cloudfront-distribution-id.txt ]; then
+          DIST_ID=$(cat cloudfront-distribution-id.txt | tr -d '\n')
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
+          echo "CloudFront invalidation triggered for distribution $DIST_ID"
+        else
+          echo "No cloudfront-distribution-id.txt found — skipping invalidation"
+        fi
+
+artifacts:
+  files:
+    - "**/*"
+  exclude_paths:
+    - ".git/**/*"
+    - "Jenkinsfile"
+    - "buildspec.yml"
+    - "*.md"
